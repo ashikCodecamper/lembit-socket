@@ -1,0 +1,19 @@
+{
+  "name": "lembits-socket-server",
+  "version": "1.0.0",
+  "description": "Lembit socket server with nginx load balancer",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ashikur Rahaman (ashik.developer@gmail.com)",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "minimist": "^1.2.5",
+    "request": "^2.88.0",
+    "socket.io": "^2.3.0",
+    "socket.io-redis": "^5.3.0"
+  }
+}
