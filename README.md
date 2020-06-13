@@ -38,6 +38,7 @@ cp env.txt .env
 ```
 And add you cinfiguration on .env file
 
+NGINX configs are in `nginx/socket1-stagingtr.lembits.in.conf` folder
 
 # API
 An application exposes REST and SocketIO APIs
