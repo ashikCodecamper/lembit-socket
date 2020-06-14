@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
 const ios = require("socket.io")(server);
-const io = ios.of('/socket.io');
+const io = ios.of('/socket.io/');
 const server_url = config.serverUrl;
 const apiKey = config.apiKey;
 
