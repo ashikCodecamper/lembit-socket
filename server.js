@@ -10,8 +10,7 @@ const request = require("request");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
-const ios = require("socket.io")(server);
-const io = ios.of('/socket.io/');
+const io = require("socket.io")(server);
 const server_url = config.serverUrl;
 const apiKey = config.apiKey;
 
