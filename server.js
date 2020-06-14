@@ -10,7 +10,7 @@ const request = require("request");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
-const io = require("socket.io")(server);
+const io = require("socket.io")(server,{'transports': ['websocket', 'polling']});
 const server_url = config.serverUrl;
 const apiKey = config.apiKey;
 
