@@ -10,14 +10,14 @@ const redis = require('socket.io-redis');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const server = require('http').Server(app).listen(+port);
-const io_s = require('socket.io')(server);
+const io = require('socket.io')(server);
 
-io_s.adapter(redis({
+io.adapter(redis({
     host: config.redisHost,
-    port: config.redisPort
+    port: config.redisPort,
+    requestsTimeout: 5000
 }));
 
-const io = io_s.of('/');
 const server_url= config.serverUrl;
 const apiKey= config.apiKey;
 
@@ -101,11 +101,22 @@ function sendCluster(data){
 var users={};
 var temp_users=[];
 var i=0;
-
+io.of('/').adapter.clients((err, clients) => {
+    if(err) {
+        console.log(err);
+    }
+    console.log(clients); // an array containing all connected socket ids
+  });
 io.on('connection', function (socket) {
+    console.log(socket.id);
+    //my code
+
+    //mycode
     var userId=socket.handshake.query.user_id;
+    console.log(userId);
     if(users[userId]!==undefined){
         users[userId].push(socket.id);
+        console.log(users);
     }else{
         users[userId]=[];
         users[userId].push(socket.id);
