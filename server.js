@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const http = require("http");
 const parseArgs = require("minimist");
 const args = parseArgs(process.argv.slice(2));
 const { name = "default", port = "3001" } = args;
@@ -8,9 +9,7 @@ const app = express();
 const request = require("request");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const server = require("http")
-  .Server(app)
-  .listen(+port);
+const server = http.createServer(app);
 const io = require("socket.io")(server);
 const server_url = config.serverUrl;
 const apiKey = config.apiKey;
@@ -162,4 +161,13 @@ io.on("connection", function (socket) {
       res.send("you are not authorized");
     }
   });
+});
+
+server.listen(+port, "0.0.0.0", (err) => {
+  if (err) {
+    console.log(err.stack);
+    return;
+  }
+
+  console.log(`Node [${name}] listens on http://127.0.0.1:${port}.`);
 });
