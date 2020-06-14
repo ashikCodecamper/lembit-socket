@@ -6,18 +6,10 @@ const { name = 'default', port = '3001'} = args;
 const config  = require('./config');
 const app = express();
 const request = require('request');
-const redis = require('socket.io-redis');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const server = require('http').Server(app).listen(+port);
 const io = require('socket.io')(server);
-
-io.adapter(redis({
-    host: config.redisHost,
-    port: config.redisPort,
-    requestsTimeout: 5000
-}));
-
 const server_url= config.serverUrl;
 const apiKey= config.apiKey;
 
@@ -69,7 +61,6 @@ app.post('/send', function (req, res) {
     if(req.body.api_key!==undefined && req.body.api_key==apiKey){
         try{
             if(req.body.user_ids!==undefined && req.body.user_ids.length){
-                console.log(users);
                 req.body.user_ids.forEach(function(user_id){
                     if(users[user_id]!==undefined){
                         users[user_id].forEach(function(socket_id){
@@ -102,22 +93,11 @@ function sendCluster(data){
 var users={};
 var temp_users=[];
 var i=0;
-io.of('/').adapter.clients((err, clients) => {
-    if(err) {
-        console.log(err);
-    }
-    console.log(clients); // an array containing all connected socket ids
-  });
 io.on('connection', function (socket) {
-    console.log(socket.id);
-    //my code
-
-    //mycode
+    console.log(users);
     var userId=socket.handshake.query.user_id;
-    console.log(userId);
     if(users[userId]!==undefined){
         users[userId].push(socket.id);
-        console.log(users);
     }else{
         users[userId]=[];
         users[userId].push(socket.id);
@@ -135,6 +115,7 @@ io.on('connection', function (socket) {
     }
     i++;
     socket.on('disconnect', function (reason){
+        console.log(users);
         var user_id=socket.handshake.query.user_id;
         var socketIds=[];
         users[user_id].forEach(function(socket_id){
