@@ -69,6 +69,7 @@ app.post('/send', function (req, res) {
     if(req.body.api_key!==undefined && req.body.api_key==apiKey){
         try{
             if(req.body.user_ids!==undefined && req.body.user_ids.length){
+                console.log(users);
                 req.body.user_ids.forEach(function(user_id){
                     if(users[user_id]!==undefined){
                         users[user_id].forEach(function(socket_id){
