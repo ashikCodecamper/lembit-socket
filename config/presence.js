@@ -1,156 +1,40 @@
-var redis = require('redis');
-var config = require('./config');
+var config = require('./index');
+var Redis = require('ioredis');
+const redis = new Redis({
+  port: config.redisPort, // Redis port
+  host: config.redisHost, // Redis host
+});
 
-function Presence() {
-  this.client = redis.createClient({
-    host: config.REDIS_ENDPOINT
-  });
+module.exports = {
+  checkUser: async (userId) => {
+    return await redis.exists(userId)
+  },
+  activeUsers: async () => {
+    return await redis.hlen("users")
+  },
+  setUser : async (userId,socketId) => {
+    await redis.pipeline()
+    .set(userId,socketId)
+    .hset("users",userId,socketId).exec()
+  },
+  getAllUsers : async () => {
+    return await redis.hgetall("users")
+  },
+  updateUserSocketId: async (userId,socketId) => {
+    await redis.getset(userId,socketId)
+  },
+  setInactiveUser: async (socketId) => {
+     await redis.sadd("inactive",socketId);
+  },
+  getInactiveUser: async () => {
+    return await redis.smembers("inactive");
+ },
+ getSocketIdsByUserIds: async (userIds) => {
+   const users = await redis.mget(...userIds);
+   if(users) {
+     return users.filter((user) => {
+       return user != null;
+     })
+   }
+ }
 }
-module.exports = new Presence();
-
-/**
-  * Remember a present user with their connection ID
-  *
-  * @param {string} connectionId - The ID of the connection
-  * @param {object} meta - Any metadata about the connection
-**/
-Presence.prototype.upsert = function(connectionId, meta) {
-  this.client.hset(
-    'presence',
-    connectionId,
-    JSON.stringify({
-      meta: meta,
-      when: Date.now()
-    }),
-    function(err) {
-      if (err) {
-        console.error('Failed to store presence in redis: ' + err);
-      }
-    }
-  );
-};
-
-/**
- * Remember a present user with their connection ID
- *
- * @param {string} connectionId - The ID of the connection
- * @param {object} meta - Any metadata about the connection
- **/
-Presence.prototype.add_driver = function(connectionId, meta) {
-    this.client.hset(
-        'driver',
-        connectionId,
-        JSON.stringify({
-            meta: meta,
-            when: Date.now()
-        }),
-        function(err) {
-            if (err) {
-                console.error('Failed to store presence in redis: ' + err);
-            }
-        }
-    );
-};
-
-/**
-  * Remove a presence. Used when someone disconnects
-  *
-  * @param {string} connectionId - The ID of the connection
-  * @param {object} meta - Any metadata about the connection
-**/
-Presence.prototype.remove = function(connectionId) {
-  this.client.hdel(
-    'presence',
-    connectionId,
-    function(err) {
-      if (err) {
-        console.error('Failed to remove presence in redis: ' + err);
-      }
-    }
-  );
-};
-
-/**
- * Remove a presence. Used when someone disconnects
- *
- * @param {string} connectionId - The ID of the connection
- * @param {object} meta - Any metadata about the connection
- **/
-Presence.prototype.remove_driver = function(connectionId) {
-    this.client.hdel(
-        'driver',
-        connectionId,
-        function(err) {
-            if (err) {
-                console.error('Failed to remove presence in redis: ' + err);
-            }
-        }
-    );
-};
-
-/**
- * Remove a presence. Used when someone disconnects
- *
- * @param {string} connectionId - The ID of the connection
- * @param {object} meta - Any metadata about the connection
- **/
-Presence.prototype.get_info = function(connectionId) {
-    this.client.hget(
-        'presence',
-        connectionId,
-        function(err) {
-            if (err) {
-                console.error('Failed to remove presence in redis: ' + err);
-            }
-        }
-    );
-};
-
-
-/**
-  * Returns a list of present users, minus any expired
-  *
-  * @param {function} returnPresent - callback to return the present users
-**/
-Presence.prototype.list = function(returnPresent) {
-  var active = [];
-  var dead = [];
-  var now = Date.now();
-  var self = this;
-
-  this.client.hgetall('presence', function(err, presence) {
-    if (err) {
-      console.error('Failed to get presence from Redis: ' + err);
-      return returnPresent([]);
-    }
-
-    for (var connection in presence) {
-      var details = JSON.parse(presence[connection]);
-      details.connection = connection;
-
-      if (now - details.when > 8000) {
-        dead.push(details);
-      } else {
-        active.push(details);
-      }
-    }
-
-    if (dead.length) {
-      self._clean(dead);
-    }
-
-    return returnPresent(active);
-  });
-};
-
-/**
-  * Cleans a list of connections by removing expired ones
-  *
-  * @param
-**/
-Presence.prototype._clean = function(toDelete) {
-  console.log(`Cleaning ${toDelete.length} expired presences`);
-  for (var presence of toDelete) {
-    this.remove(presence.connection);
-  }
-};
