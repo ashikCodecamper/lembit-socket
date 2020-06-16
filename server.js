@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const parseArgs = require("minimist");
+const morgan = require('morgan');
 const args = parseArgs(process.argv.slice(2));
 const { name = "default", port = "3001" } = args;
 const config = require("./config");
@@ -21,7 +22,7 @@ const apiKey = config.apiKey;
 var clusters = ["socket1-staging-tr.lembits.in"];
 
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(morgan("dev"));
 app.get("/api/test", (req, res) => {
   res.json({
     headers: req.headers,
