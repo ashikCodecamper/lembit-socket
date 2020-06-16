@@ -132,8 +132,7 @@ io.on("connection", async function (socket) {
   if (isExists == 1) {
     try {
       request(server_url + "/socket-login?type=1&id=" + userId);
-      sendCluster({ type: "user_login", data: { user_id: userId } });
-    } catch (err) {
+      socket.broadcast('user_message',JSON.stringify({ type: "user_login", data: { user_id: userId } }));    } catch (err) {
       console.log("login error : " + userId);
       console.log(err);
     }
@@ -149,8 +148,7 @@ io.on("connection", async function (socket) {
         inactive.map((userId) => {
           try {
             request(server_url + "/socket-login?type=0&id=" + userId);
-            sendCluster({ type: "user_logout", data: { user_id: userId } });
-          } catch (err) {
+            socket.broadcast('user_message',JSON.stringify({ type: "user_logout", data: { user_id: userId } }));          } catch (err) {
             console.log("logout error : " + userId);
             console.log(err);
           }
