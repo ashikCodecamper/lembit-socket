@@ -14,14 +14,14 @@ module.exports = {
   },
   setUser : async (userId,socketId) => {
     await redis.pipeline()
-    .set(userId,socketId)
+    .sadd(userId,socketId)
     .hset("users",userId,socketId).exec()
   },
   getAllUsers : async () => {
     return await redis.hgetall("users")
   },
   updateUserSocketId: async (userId,socketId) => {
-    await redis.getset(userId,socketId)
+    await redis.sadd(userId,socketId)
   },
   setInactiveUser: async (socketId) => {
      await redis.sadd("inactive",socketId);
@@ -29,12 +29,7 @@ module.exports = {
   getInactiveUser: async () => {
     return await redis.smembers("inactive");
  },
- getSocketIdsByUserIds: async (userIds) => {
-   const users = await redis.mget(...userIds);
-   if(users) {
-     return users.filter((user) => {
-       return user != null;
-     })
-   }
+ getSocketIdsByUserId: async (userId) => {
+   return await redis.smembers(userId);
  }
 }
