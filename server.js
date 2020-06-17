@@ -131,6 +131,7 @@ io.on("connection", async function (socket) {
     await Precense.updateUserSocketId(userId, socket.id);
   } else {
     await Precense.setUser(userId, socket.id);
+    await Precense.removeFromInactiveUser(userId);
   }
 
   if (isExists == 1) {
@@ -149,25 +150,23 @@ io.on("connection", async function (socket) {
   socket.on("disconnect", async function (reason) {
     // redis store start
     var user_id = socket.handshake.query.user_id;
-    await Precense.setInactiveUser(user_id);
-    const inactive = await Precense.getInactiveUser();
     setTimeout(function () {
-      if (inactive.length) {
-        inactive.map((userId) => {
+      if (await Precense.removeFromInactiveUser(user_id)) {
+        
           try {
-            request(server_url + "/socket-login?type=0&id=" + userId);
+            request(server_url + "/socket-login?type=0&id=" + user_id);
             io.emit(
               "user_message",
-              JSON.stringify({ type: "user_logout", data: { user_id: userId } })
+              JSON.stringify({ type: "user_logout", data: { user_id: user_id } })
             );
           } catch (err) {
             console.log("logout error : " + userId);
             console.log(err);
           }
-        });
+        
       }
     }, 10000);
-  });
+  
   socket.on("heartbeat", (payload) => {
     payload.nodeName = name;
     socket.emit("heartbeat", payload);
