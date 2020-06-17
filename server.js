@@ -132,9 +132,7 @@ io.on("connection", async function (socket) {
   } else {
     await Precense.setUser(userId, socket.id);
     await Precense.removeFromInactiveUser(userId);
-  }
-
-  if (isExists == 1) {
+  
     try {
       request(server_url + "/socket-login?type=1&id=" + userId);
       io.emit(
