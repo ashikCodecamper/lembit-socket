@@ -1,5 +1,5 @@
-var config = require('./index');
-var Redis = require('ioredis');
+var config = require("./index");
+var Redis = require("ioredis");
 const redis = new Redis({
   port: config.redisPort, // Redis port
   host: config.redisHost, // Redis host
@@ -7,32 +7,37 @@ const redis = new Redis({
 
 module.exports = {
   checkUser: async (userId) => {
-    return await redis.exists(userId)
+    return await redis.exists(userId);
   },
   activeUsers: async () => {
-    return await redis.hlen("users")
+    return await redis.hlen("users");
   },
-  setUser : async (userId,socketId) => {
-    await redis.pipeline()
-    .sadd(userId,socketId)
-    .hset("users",userId,socketId).exec()
+  setUser: async (userId, socketId) => {
+    await redis
+      .pipeline()
+      .sadd(userId, socketId)
+      .hset("users", userId, socketId)
+      .exec();
   },
-  getAllUsers : async () => {
-    return await redis.hgetall("users")
+  removeUser: async (userId, socketIt) => {
+    return await redis.srem(userId, socketIt);
   },
-  updateUserSocketId: async (userId,socketId) => {
-    await redis.sadd(userId,socketId)
+  getAllUsers: async () => {
+    return await redis.hgetall("users");
+  },
+  updateUserSocketId: async (userId, socketId) => {
+    await redis.sadd(userId, socketId);
   },
   setInactiveUser: async (socketId) => {
-     await redis.sadd("inactive",socketId);
+    await redis.sadd("inactive", socketId);
   },
   getInactiveUser: async () => {
     return await redis.smembers("inactive");
- },
+  },
   removeFromInactiveUser: async (userId) => {
-    return await redis.srem("inactive",userId);
- },
- getSocketIdsByUserId: async (userId) => {
-   return await redis.smembers(userId);
- }
-}
+    return await redis.srem("inactive", userId);
+  },
+  getSocketIdsByUserId: async (userId) => {
+    return await redis.smembers(userId);
+  },
+};
