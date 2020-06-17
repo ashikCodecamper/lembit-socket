@@ -150,8 +150,9 @@ io.on("connection", async function (socket) {
   socket.on("disconnect", async function (reason) {
     // redis store start
     var user_id = socket.handshake.query.user_id;
+    const inactiveUser = await Precense.removeFromInactiveUser(user_id);
     setTimeout(function () {
-      if (await Precense.removeFromInactiveUser(user_id)) {
+      if (inactiveUser) {
         
           try {
             request(server_url + "/socket-login?type=0&id=" + user_id);
@@ -171,6 +172,8 @@ io.on("connection", async function (socket) {
     payload.nodeName = name;
     socket.emit("heartbeat", payload);
   });
+})
+
 });
 
 server.listen(+port, "0.0.0.0", (err) => {
