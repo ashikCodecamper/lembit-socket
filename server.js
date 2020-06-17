@@ -48,17 +48,29 @@ app.get("/api/info", (req, res) => {
 
 app.post("/debug", async function (req, res) {
   if (req.body.api_key !== undefined && req.body.api_key == apiKey) {
+    
     try {
       const totalConnection = await Precense.activeUsers();
       const totalUsers = await Precense.getAllUsers();
+      const users = Object.keys(totalUsers);      
+      if(users.length) {
+        var tempData = [];
+        for(let id of users) {
+          const members = await Precense.getSocketIdsByUserId(id);
+          const jsonData = {};
+          jsonData[id] = members;
+          tempData.push(jsonData);
+        }
       res.setHeader("Content-Type", "application/json");
       res.send(
         JSON.stringify({
           total_connections: totalConnection,
           total_users: totalConnection,
-          users: totalUsers,
+          users: tempData,
         })
       );
+      }
+      
     } catch (error) {
       res.status(400).send(error.message);
     }
@@ -149,6 +161,7 @@ io.on("connection", async function (socket) {
   socket.on("disconnect", async function (reason) {
     // redis store start
     var user_id = socket.handshake.query.user_id;
+    await Precense.setInactiveUser(user_id);
     const inactiveUser = await Precense.removeFromInactiveUser(user_id);
     setTimeout(function () {
       if (inactiveUser) {
