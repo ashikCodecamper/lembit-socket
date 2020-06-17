@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const path = require("path");
 const http = require("http");
 const parseArgs = require("minimist");
@@ -7,6 +8,7 @@ const args = parseArgs(process.argv.slice(2));
 const { name = "default", port = "3001" } = args;
 const config = require("./config");
 const app = express();
+app.use(cors());
 const request = require("request");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

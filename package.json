@@ -9,6 +9,7 @@
   "author": "Ashikur Rahaman (ashik.developer@gmail.com)",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "ioredis": "^4.17.3",
