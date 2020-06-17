@@ -29,6 +29,9 @@ module.exports = {
   getInactiveUser: async () => {
     return await redis.smembers("inactive");
  },
+  removeFromInactiveUser: async () => {
+    
+ },
  getSocketIdsByUserId: async (userId) => {
    return await redis.smembers(userId);
  }
