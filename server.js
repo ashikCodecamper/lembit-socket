@@ -69,7 +69,8 @@ app.post("/users", async function (req, res) {
   if (req.body.api_key !== undefined && req.body.api_key == apiKey) {
     try {
       const allUsers = await Precense.getAllUsers();
-      res.status(200).json(allUsers);
+      const users = Object.keys(allUsers);
+      res.status(200).json(users);
     } catch (error) {
       console.log(error.message);
       res.status(400).send(error.message);
